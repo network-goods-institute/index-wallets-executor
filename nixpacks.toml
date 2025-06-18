@@ -1,2 +1,2 @@
 [phases.setup]
-aptPkgs = ["protobuf-compiler"]
+aptPkgs = ["protobuf-compiler", "libprotobuf-dev"]
