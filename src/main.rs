@@ -19,9 +19,9 @@ use delta_executor_sdk::{
         crypto::{
             HashDigest,
             Ed25519PubKey,
-            Ed25519PrivKey
+            Ed25519PrivKey,
         }, 
-        verifiable::VerifiableType, 
+        verifiable::VerifiableType,
     },
     execution::FullDebitExecutor,
     proving
@@ -46,6 +46,7 @@ type BatchTracker = Mutex<BatchState>;
 
 
 // Define the specific Runtime type we're using
+// 
 type Runtime = delta_executor_sdk::Runtime<FullDebitExecutor, proving::mock::Client>;
 
 // Function to read keypair from JSON file
@@ -80,11 +81,21 @@ async fn health_check() -> HttpResponse {
     HttpResponse::Ok().json(health)
 }
 
+// Runtime info endpoint  
+async fn runtime_info() -> HttpResponse {
+    let shard = env::var("SHARD_NUMBER").unwrap_or_else(|_| "1".to_string());
+    let info = serde_json::json!({
+        "status": "runtime_active",
+        "shard": shard,
+        "timestamp": chrono::Utc::now().to_rfc3339(),
+    });
+    HttpResponse::Ok().json(info)
+}
+
 async fn get_vault(key: web::Path<Ed25519PubKey>, runtime: web::Data<Runtime>) -> HttpResponse {
     tracing::info!("Received request for vault: {}", key);
 
     match runtime.get_vault(&key.into_inner()) {
-        // Log the vault access attempt
         Ok(Some(vault)) => HttpResponse::Ok().json(vault),
         Ok(None) => HttpResponse::NotFound().body("Vault not found for the provided public key"),
         Err(_) => HttpResponse::InternalServerError().finish(),
@@ -110,10 +121,6 @@ async fn post_execute(
     batch_tracker: web::Data<BatchTracker>,
     batch_size: web::Data<usize>,
 ) -> actix_web::Result<impl Responder> {
-    // Log the request before consuming it
-    tracing::info!("Received request to execute verifiables");
-    tracing::info!("Received request to execute verifiables: {:?}", request);
-    
     // Get the verifiables from the request
     let verifiables = request.into_inner();
     let verifiable_count = verifiables.len();
@@ -322,16 +329,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let runtime: web::Data<Runtime> = if environment == "production" {
         let base_rpc_url = env::var("BASE_RPC_URL")
             .expect("BASE_RPC_URL must be set in production");
-        tracing::info!("Production mode: Connected to base layer at {}", base_rpc_url);
+        tracing::info!("Production mode: Connecting to base layer at {}", base_rpc_url);
+        tracing::info!("Building runtime for shard {} with pubkey {}", shard, _pubkey);
         
-        web::Data::new(
-            delta_executor_sdk::Runtime::builder(shard, keypair)
-                .with_rpc(&base_rpc_url)
-                .build()
-                .await?,
-        )
+        let runtime = delta_executor_sdk::Runtime::builder(shard, keypair)
+            .with_rpc(&base_rpc_url)
+            .with_seed_keys(vec![_pubkey])
+            .build()
+            .await?;
+        
+        tracing::info!("Runtime successfully created with RPC connection");
+        
+        // Try to get our own vault to verify connection
+        match runtime.get_vault(&_pubkey) {
+            Ok(Some(_)) => tracing::info!("Found vault for executor pubkey: {}", _pubkey),
+            Ok(None) => tracing::warn!("No vault found for executor pubkey: {}", _pubkey),
+            Err(e) => tracing::error!("Error checking executor vault: {:?}", e),
+        }
+        
+        web::Data::new(runtime)
     } else {
         tracing::info!("Development mode: Running without RPC connection");
+        tracing::info!("Building runtime for shard {} with pubkey {}", shard, _pubkey);
         
         web::Data::new(
             delta_executor_sdk::Runtime::builder(shard, keypair)
@@ -363,6 +382,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .app_data(batch_tracker.clone())
             .app_data(batch_size_data.clone())
             .route("/health", web::get().to(health_check))
+            .route("/runtime-info", web::get().to(runtime_info))
             .route("/vaults/{pubkey}", web::get().to(get_vault))
             .route("/verifiables", web::post().to(post_signed_verifiables))
             .route("/execute", web::post().to(post_execute))
