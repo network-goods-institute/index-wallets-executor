@@ -1,2 +1,2 @@
 [registries.delta]
-index = "https://crates.repyhlabs.dev/git/index"
+index = "sparse+https://crates.repyhlabs.dev/api/v1/crates/"
