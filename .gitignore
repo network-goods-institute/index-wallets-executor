@@ -1,0 +1,34 @@
+# Keypair files
+keypair.json
+*_keypair.json
+*.key
+*.pem
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# Rust build artifacts
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+
+# OS files
+Thumbs.db

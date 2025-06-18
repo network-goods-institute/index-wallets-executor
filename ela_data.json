@@ -1,0 +1,14 @@
+{
+    "type": "create_executor",
+    "data": {
+        "ela": {
+            "executor": "4f9x7wpQEqH5JZDW8eiaRmoL7jUeAzun239vGap6x9Su",
+            "executor_operator": "4f9x7wpQEqH5JZDW8eiaRmoL7jUeAzun239vGap6x9Su",
+            "shard": 1,
+            "collateral": 100,
+            "activation_epoch": 0,
+            "deactivation_epoch": 999999,
+            "lease_per_epoch": 0
+        }
+    }
+}

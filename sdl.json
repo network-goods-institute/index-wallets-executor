@@ -1,0 +1,11 @@
+{
+    "type": "sdl",
+    "data": {
+      "sdl": {
+        "epoch": 0,
+        "shard": 1,
+        "diff": [],
+        "external_dependencies": []
+      }
+    }
+}
