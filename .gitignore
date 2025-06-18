@@ -13,7 +13,8 @@ keypair.json
 # Rust build artifacts
 /target/
 **/*.rs.bk
-Cargo.lock
+# Cargo.lock should be committed for binary crates
+# Cargo.lock
 
 # IDE files
 .vscode/
