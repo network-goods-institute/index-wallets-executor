@@ -1,2 +1,20 @@
 [phases.setup]
-aptPkgs = ["protobuf-compiler", "libprotobuf-dev"]
+nixPkgs = ["rustc", "cargo"]
+aptPkgs = [
+    "protobuf-compiler",
+    "libprotobuf-dev",
+    "clang",
+    "libclang-dev",
+    "pkg-config",
+    "libssl-dev",
+    "libstdc++6",
+    "build-essential",
+    "llvm"
+]
+
+[variables]
+LIBCLANG_PATH = "/usr/lib/x86_64-linux-gnu"
+LD_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu:/usr/lib/llvm-18/lib"
+
+[start]
+cmd = "./target/release/actix_server"

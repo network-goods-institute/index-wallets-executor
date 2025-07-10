@@ -330,7 +330,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|p| DbOptions::default().with_db_prefix_path(p.into()))
         .unwrap_or_default();
 
-    // Create the runtime with environment-based configuration
     let runtime: web::Data<Runtime> = if environment == "production" {
         let base_rpc_url = env::var("BASE_RPC_URL")
             .expect("BASE_RPC_URL must be set in production");
@@ -340,7 +339,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let runtime = delta_executor_sdk::Runtime::builder(shard, keypair)
             .with_rocksdb(db_options)
             .with_rpc(&base_rpc_url)
-            .with_seed_keys(vec![_pubkey])
+            .with_seed_keys(vec![
+                _pubkey,
+                "9n3ucLhVksXhGAYgMqgbQexacpyDTkkt8MKfJaPc3NNb".parse().unwrap(),
+                "2KGiU8QgKAvNAoAP8rTGb4j6K3s8ie2sVCWn88YPiKhq".parse().unwrap(),
+                "64NDWa3Bv2f8bYXn5gf5FMyuhpYm24ehvb9mZSZYLYeg".parse().unwrap(),
+                "J6k2qaFwLFmXdpJRSBG5Vz2J1cWCdb8HPnNiVf2GMoKv".parse().unwrap(),
+                "9kA1yBsazjhVPHHqNrJmkCkJxkDj2vL2fFan6wYztoWK".parse().unwrap(),
+                "8dYbKZR46Xt7G8spsNgvziNQsootyu54qPSz19hiw3jv".parse().unwrap(),
+                "SAPoWhxH2VZVizGGM4eeEJqL6RCTvRr6BGRThQ3hz4G".parse().unwrap(),
+                "9cnnD4bfUC5mwyevNhMnCbm2BAffH4HsXodtbE2ThP8J".parse().unwrap(),
+                "GL8mizCoEVyM6NdxEMdN6Y4GEZ6d7kSaBVpbvnABUrCf".parse().unwrap(),
+                "3grEjr6j6qtiTtkGFt7QbBx1kMSvotPtspz8rax62HPo".parse().unwrap(),
+                "44iWhL3VSuq3opHEEeh9rUW2pztsCfJux3Q783fqNN92".parse().unwrap(),
+                "GMnuRfyQ3xoG9brhxEHPgW1JuMxxrmik8RoEMwsqqtuw".parse().unwrap(),
+                "GhTcV2YgPUzhuogKU44SCLz2wqkCxQh9adsjZAAixfum".parse().unwrap(),
+                "BXsyEyAK8NvFdiE9DvMQcKRSVVTLgbGgSH3tPVsuaGFk".parse().unwrap(),
+                "F9UeDc3LFz7HETEeTWKfdXHKUn1KMtW4CksTFzgDJnou".parse().unwrap(),
+            ])
             .build()
             .await?;
         
