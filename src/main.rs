@@ -24,7 +24,7 @@ use delta_executor_sdk::{
         verifiable::VerifiableType,
     },
     execution::FullDebitExecutor,
-    proving
+    proving, storage::options::DbOptions
 };
 // Import the renamed types from the new locations
 use std::{
@@ -325,6 +325,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .and_then(|p| p.parse::<u16>().ok())
         .unwrap_or(8081);
 
+     // Read DB files path from env or use some tempdir (default)
+     let db_options = env::var("DB_PATH")
+        .map(|p| DbOptions::default().with_db_prefix_path(p.into()))
+        .unwrap_or_default();
+
     // Create the runtime with environment-based configuration
     let runtime: web::Data<Runtime> = if environment == "production" {
         let base_rpc_url = env::var("BASE_RPC_URL")
@@ -333,6 +338,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tracing::info!("Building runtime for shard {} with pubkey {}", shard, _pubkey);
         
         let runtime = delta_executor_sdk::Runtime::builder(shard, keypair)
+            .with_rocksdb(db_options)
             .with_rpc(&base_rpc_url)
             .with_seed_keys(vec![_pubkey])
             .build()
